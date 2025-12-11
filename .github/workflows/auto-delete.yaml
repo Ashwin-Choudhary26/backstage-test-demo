@@ -3,15 +3,21 @@ name: Auto Delete Merged Branches
 on:
   pull_request:
     types:
-      - closed   # Detects merge event
+      - closed
 
 permissions:
   contents: write
 
 jobs:
   delete-branch:
-    if: >
-      github.event.pull_request.merged == true
+    # PR must be merged AND must qualify for the same rules as auto-merge
+    if: |
+      github.event.pull_request.merged == true &&
+      (
+        startsWith(github.event.pull_request.head.ref, 'backstage-') ||
+        contains(github.event.pull_request.title, 'Backstage') ||
+        contains(github.event.pull_request.labels.*.name, 'auto-merge')
+      )
     runs-on: ubuntu-latest
 
     steps:
